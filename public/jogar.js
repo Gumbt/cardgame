@@ -1,4 +1,4 @@
-var socket = io('http://localhost:3000');
+var socket = io('https://casigumb.herokuapp.com/');
 var username = localStorage['user'];
 if (username == '' || username == null) {
     window.location = '/';
