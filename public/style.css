@@ -18,7 +18,9 @@
     }
 
     .login form {
-        width: 300px;
+        max-width: 300px;
+        width: 100%;
+        margin: 5px;
         display: flex;
         flex-direction: column;
     }
@@ -52,19 +54,7 @@
 
     .servers {
         margin: auto;
-        padding: 10px;
-        width: 300px;
-    }
-
-    .sv {
-        border: 1px solid gray;
-        padding: 10px;
         width: 100%;
-        margin-top: 5px;
-        border-radius: 5px;
-        text-transform: uppercase;
-        box-shadow: 0 1px 4px 0 rgba(132, 141, 154, 0.8);
-        cursor: pointer;
     }
 
     .spanR {
@@ -368,4 +358,58 @@
         .topPlayer strong {
             transform: translate(30px, 100px);
         }
+    }
+    .buttonLogout {
+        background: rgb(209, 82, 93);
+        border-color: rgb(175, 42, 42);
+        color: rgb(255, 255, 253);
+    }
+    .buttonLogin {
+        background: rgb(72, 192, 42);
+        border-color: rgb(36, 145, 42);
+        color: rgb(255, 255, 253);
+        margin-top: 5px;
+    }
+    .buttonServer {
+        background: rgb(28, 176, 246);
+        border-color: rgb(24, 153, 214);
+        color: rgb(255, 255, 253);
+        margin-bottom: 5px;
+    }
+    .buttonG {
+        width: 100%;
+        border-width: 0 0 4px;
+        padding: 12px 15px;
+        line-height: normal;
+        text-transform: uppercase;
+        border-radius: 15px;
+        border-style: solid;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: .8px;
+        text-align: center;
+        text-transform: uppercase;
+        -ms-touch-action: manipulation;
+        touch-action: manipulation;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        vertical-align: middle;
+    }
+    .buttonG:active {
+        border-width: 0;
+        margin-bottom: 4px;
+        transform: translate3d(0,4px,0);
+
+    }
+    .buttonG:hover {
+        -webkit-filter: brightness(1.1);
+        filter: brightness(1.1);
+    }
+    .ssv {
+        max-width: 300px;
+        width: 100%;
+        margin: 10px;
     }

@@ -1,5 +1,5 @@
 var username = localStorage['user'];
-if (username != '' || username != null) {
+if (username != '' && username != null) {
     window.location = '/jogar.html';
 }
 $("#loginForm").submit(function (e) {

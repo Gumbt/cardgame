@@ -3,6 +3,10 @@ var username = localStorage['user'];
 if (username == '' || username == null) {
     window.location = '/';
 }
+$(".buttonLogout").click(function () {
+    localStorage['user'] = '';
+    window.location = '/';
+});
 
 var player1 = { x: 0, y: 0 };
 var player2 = { x: 0, y: 0 };
@@ -19,7 +23,7 @@ socket.on('connect', function () {
 socket.on('dispRooms', function (rooms) {
     $('.sv').remove();
     for (room of rooms) {
-        $('.servers').append('<div class="sv" onclick=switchRoom("' + room.name + '")>' +
+        $('.servers').append('<div class="sv buttonG buttonServer" onclick=switchRoom("' + room.name + '")>' +
             room.name + '<span class="svStatus">' + room.status + '</span>' + '<span class="spanR">' + room.q + '/' + room.max + '</span></div>')
     }
 });
