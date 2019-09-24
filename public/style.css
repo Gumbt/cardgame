@@ -113,7 +113,7 @@
         display: flex;
         flex-direction: row;
         justify-content: center;
-        background: linear-gradient(63deg, #749a58 23%, transparent 23%) 7px 0, linear-gradient(63deg, transparent 74%, #749a58 78%), linear-gradient(63deg, transparent 34%, #749a58 38%, #749a58 58%, transparent 62%), #6f8867;
+        background: linear-gradient(63deg, #092E20 23%, transparent 23%) 7px 0, linear-gradient(63deg, transparent 74%, #092E20 78%), linear-gradient(63deg, transparent 34%, #092E20 38%, #092E20 58%, transparent 62%), #20351a;
         background-size: 16px 48px;
     }
 
@@ -359,23 +359,27 @@
             transform: translate(30px, 100px);
         }
     }
+
     .buttonLogout {
         background: rgb(209, 82, 93);
         border-color: rgb(175, 42, 42);
         color: rgb(255, 255, 253);
     }
+
     .buttonLogin {
         background: rgb(72, 192, 42);
         border-color: rgb(36, 145, 42);
         color: rgb(255, 255, 253);
         margin-top: 5px;
     }
+
     .buttonServer {
         background: rgb(28, 176, 246);
         border-color: rgb(24, 153, 214);
         color: rgb(255, 255, 253);
         margin-bottom: 5px;
     }
+
     .buttonG {
         width: 100%;
         border-width: 0 0 4px;
@@ -398,16 +402,19 @@
         user-select: none;
         vertical-align: middle;
     }
+
     .buttonG:active {
         border-width: 0;
         margin-bottom: 4px;
-        transform: translate3d(0,4px,0);
+        transform: translate3d(0, 4px, 0);
 
     }
+
     .buttonG:hover {
         -webkit-filter: brightness(1.1);
         filter: brightness(1.1);
     }
+
     .ssv {
         max-width: 300px;
         width: 100%;

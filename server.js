@@ -22,6 +22,7 @@ var rooms = [{ name: 'room1', q: 0, max: 2, status: 'waiting...', usersid: [], g
 { name: 'room2', q: 0, max: 2, status: 'waiting...', usersid: [], gameStatus: 1 },
 { name: 'room3', q: 0, max: 4, status: 'waiting...', usersid: [], gameStatus: 1 }];
 
+
 io.on('connection', socket => {
     console.log(socket.id);
     socket.on('adduser', function (username) {
