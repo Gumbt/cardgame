@@ -5,6 +5,8 @@ const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 
+const Game = require('./src/game');
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('views', path.join(__dirname, 'public'));
 app.engine('html', require('ejs').renderFile);
@@ -16,12 +18,10 @@ app.use('/', (req, res) => {
 app.use('/jogar', (req, res) => {
     res.render('jogar.html');
 });
-var usernames = {};
 
-var rooms = [{ name: 'room1', q: 0, max: 2, status: 'waiting...', usersid: [], gameStatus: 1 },
-{ name: 'room2', q: 0, max: 2, status: 'waiting...', usersid: [], gameStatus: 1 },
-{ name: 'room3', q: 0, max: 4, status: 'waiting...', usersid: [], gameStatus: 1 }];
-
+var rooms = [{ name: 'room1', q: 0, max: 2, status: 'waiting...', usersid: [], usersname: [], game: { active: false }, gameStatus: 1, readyCont: 0 },
+{ name: 'room2', q: 0, max: 2, status: 'waiting...', usersid: [], usersname: [], game: { active: false }, gameStatus: 1, readyCont: 0 },
+{ name: 'room3', q: 0, max: 4, status: 'waiting...', usersid: [], usersname: [], game: { active: false }, gameStatus: 1, readyCont: 0 }];
 
 io.on('connection', socket => {
     console.log(socket.id);
@@ -34,7 +34,7 @@ io.on('connection', socket => {
         console.log(newroom)
         var index2 = rooms.findIndex((e) => e.name === newroom);
         if (index2 != -1) {
-            if (rooms[index2].q == rooms[index2].max) {
+            if (rooms[index2].q == rooms[index2].max || rooms[index2].gameStatus == 2) {
                 //fullgame
             } else {
                 var index = rooms.findIndex((e) => e.name === socket.room);
@@ -43,7 +43,8 @@ io.on('connection', socket => {
                     socket.leave(socket.room);
                 }
                 rooms[index2].q++;
-                rooms[index2].usersid.push({ id: socket.id, name: socket.username })
+                rooms[index2].usersid.push(socket.id);
+                rooms[index2].usersname.push(socket.username);
                 socket.join(newroom);
                 socket.room = newroom;
                 socket.roomId = index2;
@@ -57,30 +58,45 @@ io.on('connection', socket => {
     });
     socket.on('go', function () {
         var index = rooms.findIndex((e) => e.name === socket.room);
-        io.in(socket.room).emit('gameStart', { players: rooms[index] });
+        rooms[index].readyCont++;
+        if (rooms[index].gameStatus != 2 && rooms[index].readyCont == 2) {
+            rooms[index].gameStatus = 2;
+            rooms[index].status = 'IN GAME';
+            rooms[index].game = new Game(rooms[index].usersname, rooms[index].usersid);
+            io.emit('dispRooms', rooms);
+        }
+        io.in(socket.room).emit('gameStart', rooms[index].game);
     })
 
 
     socket.on('disconnect', function () {
-        // remove the username from global usernames list
-        delete usernames[socket.username];
 
         var index = rooms.findIndex((e) => e.name === socket.room);
         if (index != -1) {
             rooms[index].q--;
+            if (rooms[index].q == 0) {
+                rooms[index].gameStatus = 1;
+                rooms[index].status = 'waiting...';
+            }
+            var index2 = rooms[index].usersname.indexOf(socket.username);//remove o usuario da sala
+            if (index2 != -1) {
+                delete rooms[index].usersid.splice(index2, 1);
+                delete rooms[index].usersname.splice(index2, 1);
+            }
         }
         socket.leave(socket.room);
         updateRoom();
-        socket.emit('dispRooms', rooms);
-        socket.broadcast.emit('dispRooms', rooms);
+        io.emit('dispRooms', rooms);
     });
 
     function updateRoom() {
         for (room of rooms) {
-            if (room.q == room.max) {
-                room.status = 'ready';
-            } else {
-                room.status = 'waiting...';
+            if (room.gameStatus != 2) {
+                if (room.q == room.max) {
+                    room.status = 'ready';
+                } else {
+                    room.status = 'waiting...';
+                }
             }
         }
     }

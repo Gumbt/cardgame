@@ -49,10 +49,11 @@ function tempoPreJogo(i, callback) {
 function switchRoom(room) {
     socket.emit('switchRoom', room);
 }
-socket.on('gameStart', function (players) {
+socket.on('gameStart', function (game) {
     $('.timer').remove();
     $('.login').remove();
     $('.game').show();
+    console.log(game);
 })
 
 $('.selectcard').click(function () {
