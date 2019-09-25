@@ -19,8 +19,8 @@ app.use('/jogar', (req, res) => {
     res.render('jogar.html');
 });
 
-var rooms = [{ name: 'room1', q: 0, max: 2, status: 'waiting...', usersid: [], usersname: [], game: { active: false }, gameStatus: 1, readyCont: 0 },
-{ name: 'room2', q: 0, max: 2, status: 'waiting...', usersid: [], usersname: [], game: { active: false }, gameStatus: 1, readyCont: 0 },
+var rooms = [{ name: 'room1', q: 0, max: 4, status: 'waiting...', usersid: [], usersname: [], game: { active: false }, gameStatus: 1, readyCont: 0 },
+{ name: 'room2', q: 0, max: 4, status: 'waiting...', usersid: [], usersname: [], game: { active: false }, gameStatus: 1, readyCont: 0 },
 { name: 'room3', q: 0, max: 4, status: 'waiting...', usersid: [], usersname: [], game: { active: false }, gameStatus: 1, readyCont: 0 }];
 
 io.on('connection', socket => {
@@ -31,7 +31,6 @@ io.on('connection', socket => {
         socket.emit('dispRooms', rooms);
     });
     socket.on('switchRoom', function (newroom) {
-        console.log(newroom)
         var index2 = rooms.findIndex((e) => e.name === newroom);
         if (index2 != -1) {
             if (rooms[index2].q == rooms[index2].max || rooms[index2].gameStatus == 2) {
@@ -59,10 +58,11 @@ io.on('connection', socket => {
     socket.on('go', function () {
         var index = rooms.findIndex((e) => e.name === socket.room);
         rooms[index].readyCont++;
-        if (rooms[index].gameStatus != 2 && rooms[index].readyCont == 2) {
+        if (rooms[index].gameStatus != 2 && rooms[index].readyCont == rooms[index].max) {
             rooms[index].gameStatus = 2;
             rooms[index].status = 'IN GAME';
-            rooms[index].game = new Game(rooms[index].usersname, rooms[index].usersid);
+            rooms[index] = { ...rooms[index], ...new Game(rooms[index].usersname, rooms[index].usersid) };
+            //rooms[index].game.getInfos(socket.id);
             io.emit('dispRooms', rooms);
         }
         io.in(socket.room).emit('gameStart', rooms[index].game);
@@ -70,7 +70,6 @@ io.on('connection', socket => {
 
 
     socket.on('disconnect', function () {
-
         var index = rooms.findIndex((e) => e.name === socket.room);
         if (index != -1) {
             rooms[index].q--;
@@ -78,11 +77,9 @@ io.on('connection', socket => {
                 rooms[index].gameStatus = 1;
                 rooms[index].status = 'waiting...';
             }
-            var index2 = rooms[index].usersname.indexOf(socket.username);//remove o usuario da sala
-            if (index2 != -1) {
-                delete rooms[index].usersid.splice(index2, 1);
-                delete rooms[index].usersname.splice(index2, 1);
-            }
+            rooms[index].usersid = rooms[index].usersid.filter(e => e !== socket.username);;
+            rooms[index].usersname = rooms[index].usersname.filter(e => e !== socket.username);;
+
         }
         socket.leave(socket.room);
         updateRoom();

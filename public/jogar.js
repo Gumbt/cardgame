@@ -21,7 +21,7 @@ socket.on('connect', function () {
 
 
 socket.on('dispRooms', function (rooms) {
-    $('.sv').remove();
+    $('.sv').hide();
     for (room of rooms) {
         $('.servers').append('<div class="sv buttonG buttonServer" onclick=switchRoom("' + room.name + '")>' +
             room.name + '<span class="svStatus">' + room.status + '</span>' + '<span class="spanR">' + room.q + '/' + room.max + '</span></div>')
@@ -30,10 +30,13 @@ socket.on('dispRooms', function (rooms) {
 
 
 socket.on('ready', function (start) {
-    $('.ssv').remove();
+    $('.ssv').hide();
 
+    socket.emit('go', true);
     tempoPreJogo(5, function () {
-        socket.emit('go', true);
+        $('.timer').hide();
+        $('.login').hide();
+        $('.game').show();
     });
 
 });
@@ -50,10 +53,7 @@ function switchRoom(room) {
     socket.emit('switchRoom', room);
 }
 socket.on('gameStart', function (game) {
-    $('.timer').remove();
-    $('.login').remove();
-    $('.game').show();
-    console.log(game);
+    gameS(game);
 })
 
 $('.selectcard').click(function () {
@@ -68,3 +68,13 @@ $('.selectcard').click(function () {
         $(this).addClass('selected');
     }
 });
+
+function gameS(game) {
+    console.log(game);
+    if (game.active == true) {
+        $('.rightPlayer .p1').text(game.players[0].nome);
+        $('.leftPlayer .p2').text(game.players[1].nome);
+        $('.topPlayer .p3').text(game.players[2].nome);
+        $('.myCards .me').text(game.players[3].nome);
+    }
+}

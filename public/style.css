@@ -192,6 +192,7 @@
         text-align: center;
         top: 0;
     }
+
     .coringa strong {
         color: white;
         text-shadow: 0 0 3px #000000, 0 0 5px #000000;
@@ -213,7 +214,8 @@
         border-radius: 10px;
         text-align: center;
         margin-right: 5px;
-        background: rgba(255, 0, 255, 0.2);
+        background: #a53535;
+        color: white;
     }
 
     .blueTeam {
@@ -222,7 +224,8 @@
         width: 40px;
         border-radius: 10px;
         text-align: center;
-        background: rgba(97, 194, 194, 0.363);
+        background: #333398;
+        color: white;
     }
 
     .trucoButton {
@@ -260,7 +263,8 @@
 
     .leftPlayer strong,
     .rightPlayer strong,
-    .topPlayer strong {
+    .topPlayer strong,
+    .myCards strong {
         position: absolute;
         color: white;
         text-shadow: 0 0 3px #000000, 0 0 5px #000000;
@@ -313,6 +317,10 @@
         .topPlayer strong {
             transform: translate(30px, 50px);
         }
+
+        .myCards strong {
+            transform: translate(-20px, -100px);
+        }
     }
 
     @media only screen and (min-width: 901px) {
@@ -361,6 +369,10 @@
 
         .topPlayer strong {
             transform: translate(30px, 100px);
+        }
+
+        .myCards strong {
+            transform: translate(-170px, 0);
         }
     }
 
