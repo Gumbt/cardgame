@@ -19,9 +19,9 @@ app.use('/jogar', (req, res) => {
     res.render('jogar.html');
 });
 
-var rooms = [{ name: 'room1', q: 0, max: 4, status: 'waiting...', usersid: [], usersname: [], game: { active: false }, gameStatus: 1, readyCont: 0 },
-{ name: 'room2', q: 0, max: 4, status: 'waiting...', usersid: [], usersname: [], game: { active: false }, gameStatus: 1, readyCont: 0 },
-{ name: 'room3', q: 0, max: 4, status: 'waiting...', usersid: [], usersname: [], game: { active: false }, gameStatus: 1, readyCont: 0 }];
+var rooms = [{ name: 'room1', q: 0, max: 4, status: 'waiting...', usersid: [], usersname: [], game: { active: false }, gameStatus: 1 },
+{ name: 'room2', q: 0, max: 4, status: 'waiting...', usersid: [], usersname: [], game: { active: false }, gameStatus: 1 },
+{ name: 'room3', q: 0, max: 4, status: 'waiting...', usersid: [], usersname: [], game: { active: false }, gameStatus: 1 }];
 
 io.on('connection', socket => {
     console.log(socket.id);
@@ -58,15 +58,43 @@ io.on('connection', socket => {
     socket.on('go', function () {
         var index = rooms.findIndex((e) => e.name === socket.room);
         rooms[index].readyCont++;
-        if (rooms[index].gameStatus != 2 && rooms[index].readyCont == rooms[index].max) {
+        if (rooms[index].gameStatus != 2) {
             rooms[index].gameStatus = 2;
             rooms[index].status = 'IN GAME';
             rooms[index] = { ...rooms[index], ...new Game(rooms[index].usersname, rooms[index].usersid) };
-            //rooms[index].game.getInfos(socket.id);
-            io.emit('dispRooms', rooms);
         }
-        io.in(socket.room).emit('gameStart', rooms[index].game);
-    })
+        emitCards(index);
+        io.emit('dispRooms', rooms);
+    });
+    function emitCards(index) {
+        for (var j = 0; j < 4; j++) {
+            var privatePlayers = [];
+            for (var i = 0; i < 4; i++) {
+                if (rooms[index].game.players[i].id == rooms[index].game.players[j].id) {//entra aki se for eu
+                    privatePlayers.push({
+                        isMe: true,
+                        ...rooms[index].game.players[i]
+                    });
+                } else {
+                    privatePlayers.push({
+                        isMe: false,
+                        idTurno: rooms[index].game.players[i].idTurno,
+                        nome: rooms[index].game.players[i].nome,
+                        id: rooms[index].game.players[i].id,
+                        team: rooms[index].game.players[i].team,
+                        numCartas: rooms[index].game.players[i].numCartas,
+                    })
+                }
+            }
+            var removeCards = {
+                active: true,
+                myTeam: rooms[index].game.players[j].team,
+                ...rooms[index].game.table,
+                players: privatePlayers
+            }
+            io.to(`${rooms[index].game.players[j].id}`).emit('gameStart', removeCards);
+        }
+    }
 
 
     socket.on('disconnect', function () {
@@ -76,6 +104,7 @@ io.on('connection', socket => {
             if (rooms[index].q == 0) {
                 rooms[index].gameStatus = 1;
                 rooms[index].status = 'waiting...';
+                rooms[index].game = { active: false };
             }
             rooms[index].usersid = rooms[index].usersid.filter(e => e !== socket.username);;
             rooms[index].usersname = rooms[index].usersname.filter(e => e !== socket.username);;

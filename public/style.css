@@ -269,7 +269,9 @@
         color: white;
         text-shadow: 0 0 3px #000000, 0 0 5px #000000;
     }
-
+    .lastCards .centerCards img {
+        position: absolute;
+    }
     @media only screen and (max-width: 900px) {
 
         .leftPlayer .cards,
@@ -291,19 +293,21 @@
         }
 
         .lastCards .centerCards img.fromBottomCard {
-            transform: translate(20px, 60px);
+            transform: translate(-30px, 10px);
+            z-index: 201;
         }
 
         .lastCards .centerCards img.fromLeftCard {
-            transform: translate(-20px, 10px);
+            transform: translate(-90px, -60px);
         }
 
         .lastCards .centerCards img.fromRightCard {
-            transform: translate(20px, 20px);
+            transform: translate(30px, -60px);
+            z-index: 200;
         }
 
         .lastCards .centerCards img.fromTopCard {
-            transform: translate(-20px, -30px);
+            transform: translate(-30px, -140px);
         }
 
         .rightPlayer strong {
@@ -344,19 +348,19 @@
         }
 
         .lastCards .centerCards img.fromBottomCard {
-            transform: translate(20px, 50px);
+            transform: translate(-80px, 90px);
         }
 
         .lastCards .centerCards img.fromLeftCard {
-            transform: translate(-90px, 10px);
+            transform: translate(-220px, -60px);
         }
 
         .lastCards .centerCards img.fromRightCard {
-            transform: translate(-30px, 20px);
+            transform: translate(50px, -60px);
         }
 
         .lastCards .centerCards img.fromTopCard {
-            transform: translate(-130px, -30px);
+            transform: translate(-80px, -190px);
         }
 
         .rightPlayer strong {

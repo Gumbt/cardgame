@@ -56,7 +56,7 @@ socket.on('gameStart', function (game) {
     gameS(game);
 })
 
-$('.selectcard').click(function () {
+$('.cards').on('click', '.selectcard', function () {
     if ($(this).hasClass('selected')) {
         alert('mandou a cartas');
     } else {
@@ -72,9 +72,58 @@ $('.selectcard').click(function () {
 function gameS(game) {
     console.log(game);
     if (game.active == true) {
-        $('.rightPlayer .p1').text(game.players[0].nome);
-        $('.leftPlayer .p2').text(game.players[1].nome);
-        $('.topPlayer .p3').text(game.players[2].nome);
-        $('.myCards .me').text(game.players[3].nome);
+        var myPos;
+        for (var i = 0; i < 4; i++) {
+            if (game.players[i].isMe == true) {
+                $('.myCards .me').text(game.players[i].nome);
+                myPos = game.players[i].idTurno;
+                $('.myCards .cards img').remove();
+                for (var j = 0; j < game.players[i].cartas.length; j++) {
+                    $('.myCards .cards').append('<img src="./assets/imgs/svg/' + game.players[i].cartas[j].suit + game.players[i].cartas[j].value + '.svg" class="selectcard card' + (j + 1) + '" id="' + (j + 1) + '">')
+                }
+            }
+            if (game.players[i].isMe == false && game.myTeam == game.players[i].team) {
+                $('.topPlayer .p3').text(game.players[i].nome);
+                $('.topPlayer .cards img').remove();
+                for (var j = 0; j < game.players[i].numCartas; j++) {
+                    $('.topPlayer .cards').append('<img src="./assets/imgs/svg/cardback_' + game.players[i].team + '.svg" >')
+                }
+            }
+        }
+        for (var i = 0; i < 4; i++) {//falta arrumar aqui, player saem com mesmo nome
+            if (game.players[i].idTurno == (myPos + 1) || (myPos == 4 && game.players[i].idTurno == 1)) {
+                $('.rightPlayer .p1').text(game.players[0].nome);
+                $('.rightPlayer .cards img').remove();
+                for (var j = 0; j < game.players[i].numCartas; j++) {
+                    $('.rightPlayer .cards').append('<img src="./assets/imgs/svg/cardback_' + game.players[i].team + '.svg" >')
+                }
+            }
+            if (game.players[i].idTurno == (myPos - 1) || (myPos == 1 && game.players[i].idTurno == 4)) {
+                $('.leftPlayer .p2').text(game.players[1].nome);
+                $('.leftPlayer .cards img').remove();
+                for (var j = 0; j < game.players[i].numCartas; j++) {
+                    $('.leftPlayer .cards').append('<img src="./assets/imgs/svg/cardback_' + game.players[i].team + '.svg" >')
+                }
+            }
+        }
+        $('.placar .redTeam span').text(game.teamsPoint.red);/// pontuacao
+        $('.placar .blueTeam span').text(game.teamsPoint.blue);
+        $('.coringa img').attr("src", "./assets/imgs/svg/" + game.coringa.suit + game.coringa.value + ".svg");
+
+        $('.centerCards img').remove();//// centro da mesa
+        for (var i = 0; i < game.centroMesa.length; i++) {
+            if (game.centroMesa[i].playerId == myPos) {
+                $('.centerCards').append('<img src="./assets/imgs/svg/' + game.centroMesa[i].carta.suit + game.centroMesa[i].carta.value + '.svg" class="fromBottomCard">')
+            }
+            if (game.centroMesa[i].playerId == (myPos - 1) || (myPos == 1 && game.centroMesa[i].playerId == 4)) {
+                $('.centerCards').append('<img src="./assets/imgs/svg/' + game.centroMesa[i].carta.suit + game.centroMesa[i].carta.value + '.svg" class="fromLeftCard">')
+            }
+            if (game.centroMesa[i].playerId == (myPos + 1) || (myPos == 4 && game.centroMesa[i].playerId == 1)) {
+                $('.centerCards').append('<img src="./assets/imgs/svg/' + game.centroMesa[i].carta.suit + game.centroMesa[i].carta.value + '.svg" class="fromRightCard">')
+            }
+            if (game.centroMesa[i].playerId == (myPos - 2) || game.centroMesa[i].playerId == (myPos + 2)) {
+                $('.centerCards').append('<img src="./assets/imgs/svg/' + game.centroMesa[i].carta.suit + game.centroMesa[i].carta.value + '.svg" class="fromTopCard">')
+            }
+        }
     }
 }

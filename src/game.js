@@ -3,12 +3,15 @@ const Deck = require('./deck');
 class Game {
     constructor(players, playersId) {
         const deck1 = new Deck();
+        var startPlayer = (Math.floor(Math.random() * 4) + 1);
         this.game = {
             active: true,
             players: [{
                 nome: players[0],
                 id: playersId[0],
+                idTurno: 1,
                 team: 'red',
+                numCartas: 3,
                 cartas: [deck1.deal(),
                 deck1.deal(),
                 deck1.deal()]
@@ -16,7 +19,9 @@ class Game {
             {
                 nome: players[1],
                 id: playersId[1],
+                idTurno: 3,
                 team: 'red',
+                numCartas: 3,
                 cartas: [deck1.deal(),
                 deck1.deal(),
                 deck1.deal()]
@@ -24,51 +29,45 @@ class Game {
             {
                 nome: players[2],
                 id: playersId[2],
+                idTurno: 2,
                 team: 'blue',
+                numCartas: 3,
                 cartas: [deck1.deal(),
                 deck1.deal(),
                 deck1.deal()]
             }, {
                 nome: players[3],
                 id: playersId[3],
+                idTurno: 4,
                 team: 'blue',
+                numCartas: 3,
                 cartas: [deck1.deal(),
                 deck1.deal(),
                 deck1.deal()]
             }],
             table: {
                 teamsPoint: {
-                    red: 5,
-                    blue: 3
+                    red: 0,
+                    blue: 0
                 },
                 coringa: deck1.deal(),
                 turno: {
-                    player: 'dsadas432' // mudar se pah
+                    player: startPlayer,//quem comeca e vai pra quem ta na vez
+                    lastStart: startPlayer//salva o player q comecou a ultima rodada, para q o proximo da fila comece depois
                 },
-                valueTruco: 3,
+                valueTruco: 0,
                 requestTruco: {
                     requested: true,
                     by: 'redTeam',
-                    value: 6
+                    value: 3
                 },
-                centroMesa: []
+                centroMesa: [/*{ playerId: 1, carta: deck1.deal() },
+                { playerId: 2, carta: deck1.deal() },
+                { playerId: 3, carta: deck1.deal() },
+                { playerId: 4, carta: deck1.deal() }*/]
             }
         }
     }
-    getInfos(socketid) {
-        //pegar o id e enviar somenta as cartas dele e a quantidade de carta de cada jogador e informaçoes publicas da partida
-        var removeCards = this.game;
-        for (var i = 0; i < 4; i++) {
-            if (this.game.players[i].id == socketid) {
 
-            } else {
-                removeCards = { ...removeCards, ...this.game.players[i].cards.splice(3, 1) };
-            }
-        }
-        console.log(removeCards)
-        const infoGame = {
-            players
-        }
-    }
 };
 module.exports = Game;
