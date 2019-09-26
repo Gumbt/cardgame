@@ -269,9 +269,11 @@
         color: white;
         text-shadow: 0 0 3px #000000, 0 0 5px #000000;
     }
+
     .lastCards .centerCards img {
         position: absolute;
     }
+
     @media only screen and (max-width: 900px) {
 
         .leftPlayer .cards,
@@ -438,4 +440,8 @@
         max-width: 300px;
         width: 100%;
         margin: 10px;
+    }
+
+    strong.isTurno {
+        color: #48ea4d !important;
     }

@@ -33,13 +33,23 @@ io.on('connection', socket => {
     socket.on('switchRoom', function (newroom) {
         var index2 = rooms.findIndex((e) => e.name === newroom);
         if (index2 != -1) {
-            if (rooms[index2].q == rooms[index2].max || rooms[index2].gameStatus == 2) {
+            if (rooms[index2].q == rooms[index2].max) {
                 //fullgame
             } else {
                 var index = rooms.findIndex((e) => e.name === socket.room);
                 if (index != -1) {
                     rooms[index].q--;
                     socket.leave(socket.room);
+                }
+                if (rooms[index2].gameStatus == 2) {//se o jogo tiver ativo adiciona o id
+                    var playerIndex = rooms[index2].game.players.findIndex((e) => e.id == '');
+
+                    if (playerIndex != -1) {
+                        rooms[index2].game.players[playerIndex].id = socket.id;
+                        rooms[index2].game.players[playerIndex].nome = socket.username;
+                        emitCards(index2);
+                    }
+
                 }
                 rooms[index2].q++;
                 rooms[index2].usersid.push(socket.id);
@@ -106,12 +116,19 @@ io.on('connection', socket => {
                 rooms[index].status = 'waiting...';
                 rooms[index].game = { active: false };
             }
-            rooms[index].usersid = rooms[index].usersid.filter(e => e !== socket.username);;
-            rooms[index].usersname = rooms[index].usersname.filter(e => e !== socket.username);;
-
+            if (rooms[index].gameStatus == 2) {//se o jogo tiver ativo remove o id
+                for (var i = 0; i < 4; i++) {
+                    if (rooms[index].game.players[i].id == socket.id) {
+                        rooms[index].game.players[i].id = '';
+                    }
+                }
+            }
+            var indexUser = rooms[index].usersid.findIndex((e) => e == socket.id);
+            rooms[index].usersid.splice(indexUser, 1);
+            rooms[index].usersname.splice(indexUser, 1);
+            socket.leave(socket.room);
+            updateRoom();
         }
-        socket.leave(socket.room);
-        updateRoom();
         io.emit('dispRooms', rooms);
     });
 
