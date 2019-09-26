@@ -350,7 +350,7 @@
         }
 
         .lastCards .centerCards img.fromBottomCard {
-            transform: translate(-80px, 90px);
+            transform: translate(-80px, 0);
         }
 
         .lastCards .centerCards img.fromLeftCard {

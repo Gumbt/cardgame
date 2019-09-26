@@ -143,6 +143,21 @@ io.on('connection', socket => {
             }
         }
     }
+    socket.on('sendCard', function (infos) {
+        var index = rooms.findIndex((e) => e.name === socket.room);
+        if (index != -1) {
+            if (rooms[index].game.table.turno.player == infos.player) {
+                var indexUser = rooms[index].game.players.findIndex((e) => e.id == socket.id);
+                var carta = rooms[index].game.players[indexUser].cartas[infos.carta];
+                rooms[index].game.players[indexUser].cartas.splice(infos.carta, 1);
+                rooms[index].game.players[indexUser].numCartas--;
+                rooms[index].game.table.centroMesa.push({ playerId: infos.player, carta })
+                if (rooms[index].game.table.turno.player != 4) rooms[index].game.table.turno.player++;
+                else rooms[index].game.table.turno.player = 1;
+                emitCards(index);
+            }
+        }
+    });
 });
 
 

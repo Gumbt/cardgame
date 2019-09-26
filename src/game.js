@@ -55,6 +55,11 @@ class Game {
                     player: startPlayer,//quem comeca e vai pra quem ta na vez
                     lastStart: startPlayer//salva o player q comecou a ultima rodada, para q o proximo da fila comece depois
                 },
+                roundPoints: {
+                    blue: 0,
+                    red: 0,
+                    empate: 0,
+                },
                 valueTruco: 0,
                 requestTruco: {
                     requested: true,

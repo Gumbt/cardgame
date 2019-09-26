@@ -7,10 +7,8 @@ $(".buttonLogout").click(function () {
     localStorage['user'] = '';
     window.location = '/';
 });
-
-var player1 = { x: 0, y: 0 };
-var player2 = { x: 0, y: 0 };
-const diff = 5;
+var turno = 0;
+var myPos = 0;
 const pr = document.getElementById("root");
 
 $('#userWelcome strong').text(username)
@@ -58,7 +56,10 @@ socket.on('gameStart', function (game) {
 
 $('.cards').on('click', '.selectcard', function () {
     if ($(this).hasClass('selected')) {
-        alert('mandou a cartas');
+        if (turno == 1 && myPos != 0) {
+            var carta = parseInt($(this).attr('id')) - 1;
+            socket.emit('sendCard', { player: myPos, carta });
+        }
     } else {
         $('.selected').removeClass('selected')
         $('.card1').css({ "x-index": "10", "-webkit-transform": "translate(0,0)" });
@@ -72,13 +73,14 @@ $('.cards').on('click', '.selectcard', function () {
 function gameS(game) {
     console.log(game);
     if (game.active == true) {
-        var myPos;
-
+        turno = 0;
+        $('.isTurno').removeClass('isTurno');
         for (var i = 0; i < 4; i++) {
             if (game.players[i].isMe == true) {
                 $('.myCards .me').text(game.players[i].nome);
                 myPos = game.players[i].idTurno;
                 if (game.players[i].idTurno == game.turno.player) {
+                    turno = 1;
                     $('.myCards .me').addClass('isTurno');
                 }
                 $('.myCards .cards img').remove();
