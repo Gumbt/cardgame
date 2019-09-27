@@ -445,3 +445,40 @@
     strong.isTurno {
         color: #48ea4d !important;
     }
+    .placarRound{
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        display: flex;
+        padding: 5px;
+        color: white;
+        font-weight: bold;
+    }
+    .redTeamRound{
+        padding: 5px;
+        background: #a94646;
+        border-radius: 5px;
+        margin-right: 5px;
+    }
+    .blueTeamRound{
+        padding: 5px;
+        background: #4657a9;
+        border-radius: 5px;
+        margin-right: 5px;
+    }
+    .empateRound{
+        padding: 5px;
+        background: #8e8e8e;
+        border-radius: 5px;
+        margin-right: 5px;
+    }
+    .red{
+        border: 2px solid #bd3030;
+        border-radius: 10px;
+        padding: 3px;
+    }
+    .blue {
+        border: 2px solid #3044bd;
+        border-radius: 10px;
+        padding: 3px;
+    }

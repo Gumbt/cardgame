@@ -1,4 +1,4 @@
-var socket = io('http://localhost:3000/');
+var socket = io('https://casigumb.herokuapp.com/');
 var username = localStorage['user'];
 if (username == '' || username == null) {
     window.location = '/';
@@ -78,6 +78,7 @@ function gameS(game) {
         for (var i = 0; i < 4; i++) {
             if (game.players[i].isMe == true) {
                 $('.myCards .me').text(game.players[i].nome);
+                $('.myCards .me').addClass(game.players[i].team);
                 myPos = game.players[i].idTurno;
                 if (game.players[i].idTurno == game.turno.player) {
                     turno = 1;
@@ -90,6 +91,7 @@ function gameS(game) {
             }
             if (game.players[i].isMe == false && game.myTeam == game.players[i].team) {
                 $('.topPlayer .p3').text(game.players[i].nome);
+                $('.topPlayer .p3').addClass(game.players[i].team);
                 if (game.players[i].idTurno == game.turno.player) {
                     $('.topPlayer .p3').addClass('isTurno');
                 }
@@ -102,6 +104,7 @@ function gameS(game) {
         for (var i = 0; i < 4; i++) {//falta arrumar aqui, player saem com mesmo nome
             if (game.players[i].idTurno == (myPos + 1) || (myPos == 4 && game.players[i].idTurno == 1)) {
                 $('.rightPlayer .p1').text(game.players[i].nome);
+                $('.rightPlayer .p1').addClass(game.players[i].team);
                 if (game.players[i].idTurno == game.turno.player) {
                     $('.rightPlayer .p1').addClass('isTurno');
                 }
@@ -112,6 +115,7 @@ function gameS(game) {
             }
             if (game.players[i].idTurno == (myPos - 1) || (myPos == 1 && game.players[i].idTurno == 4)) {
                 $('.leftPlayer .p2').text(game.players[i].nome);
+                $('.leftPlayer .p2').addClass(game.players[i].team);
                 if (game.players[i].idTurno == game.turno.player) {
                     $('.leftPlayer .p2').addClass('isTurno');
                 }
@@ -123,6 +127,11 @@ function gameS(game) {
         }
         $('.placar .redTeam span').text(game.teamsPoint.red);/// pontuacao
         $('.placar .blueTeam span').text(game.teamsPoint.blue);
+
+        $('.placarRound .redTeamRound span').text(game.roundPoints.red);
+        $('.placarRound .blueTeamRound span').text(game.roundPoints.blue);
+        $('.placarRound .empateRound span').text(game.roundPoints.empate);
+
         $('.coringa img').attr("src", "./assets/imgs/svg/" + game.coringa.suit + game.coringa.value + ".svg");
 
         $('.centerCards img').remove();//// centro da mesa

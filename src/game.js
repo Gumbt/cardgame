@@ -60,7 +60,7 @@ class Game {
                     red: 0,
                     empate: 0,
                 },
-                valueTruco: 0,
+                valueTruco: 1,
                 requestTruco: {
                     requested: true,
                     by: 'redTeam',
