@@ -59,7 +59,33 @@
                 </div>
             </div>
             <div class="trucoButton">
-                <button class="botao">PEDIR TRUCO</button>
+                <button class="botao buttonG pedirTruco" onClick="pedirTruco(1)">PEDIR TRUCO</button>
+            </div>
+            <div class="trucoShowNotify">
+                <div class="trucoNotify">
+                    <div class="notify">
+                        <div class="text"></div>
+                        <div class="textStatus"></div>
+                        <div class="buttonGroup">
+                            <button class="botao buttonG pedirTruco" value="1">PEDIR 6!</button>
+                            <button class="botao buttonG pedirTruco" value="2">ACEITAR</button>
+                            <button class="botao buttonG pedirTruco" value="3">CORRER</button>
+                        </div>
+                    </div>
+                    <div class="fundo"></div>
+                </div>
+            </div>
+            <div class="trucoShowEndGame">
+                <div class="trucoEndGame">
+                    <div class="endGame">
+                        <div class="text">FIM DE JOGO</div>
+                        <div class="textStatus"></div>
+                        <div class="buttonGroup">
+                            <button onclick="window.location = '/'" class="botao buttonG">JOGAR NOVAMENTE</button>
+                        </div>
+                    </div>
+                    <div class="fundo"></div>
+                </div>
             </div>
             <div class="leftPlayer">
                 <strong class="p2">Player 2</strong>

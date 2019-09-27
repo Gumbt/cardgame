@@ -46,6 +46,9 @@ class Game {
                 deck1.deal()]
             }],
             table: {
+                endGame: false,
+                maoOnzeRed: false,
+                maoOnzeBlue: false,
                 teamsPoint: {
                     red: 0,
                     blue: 0
@@ -59,12 +62,18 @@ class Game {
                     blue: 0,
                     red: 0,
                     empate: 0,
+                    quemGanhouPrimeiro: ''
                 },
                 valueTruco: 1,
                 requestTruco: {
-                    requested: true,
-                    by: 'redTeam',
-                    value: 3
+                    requested: false,
+                    status: '',
+                    by: '',
+                    to: '',
+                    playerName: '',
+                    votacao: [],
+                    votosCont: 0,
+                    value: 0,
                 },
                 centroMesa: [/*{ playerId: 1, carta: deck1.deal() },
                 { playerId: 2, carta: deck1.deal() },

@@ -1,4 +1,4 @@
-var socket = io('https://casigumb.herokuapp.com/');
+var socket = io('http://localhost:3000/');
 var username = localStorage['user'];
 if (username == '' || username == null) {
     window.location = '/';
@@ -9,6 +9,7 @@ $(".buttonLogout").click(function () {
 });
 var turno = 0;
 var myPos = 0;
+var myTeam = '';
 const pr = document.getElementById("root");
 
 $('#userWelcome strong').text(username)
@@ -54,6 +55,10 @@ socket.on('gameStart', function (game) {
     gameS(game);
 })
 
+function pedirTruco(valueI) {
+    socket.emit('pedirTruco', { value: parseInt(valueI) });
+}
+
 $('.cards').on('click', '.selectcard', function () {
     if ($(this).hasClass('selected')) {
         if (turno == 1 && myPos != 0) {
@@ -73,80 +78,115 @@ $('.cards').on('click', '.selectcard', function () {
 function gameS(game) {
     console.log(game);
     if (game.active == true) {
-        turno = 0;
-        $('.isTurno').removeClass('isTurno');
-        for (var i = 0; i < 4; i++) {
-            if (game.players[i].isMe == true) {
-                $('.myCards .me').text(game.players[i].nome);
-                $('.myCards .me').addClass(game.players[i].team);
-                myPos = game.players[i].idTurno;
-                if (game.players[i].idTurno == game.turno.player) {
-                    turno = 1;
-                    $('.myCards .me').addClass('isTurno');
-                }
-                $('.myCards .cards img').remove();
-                for (var j = 0; j < game.players[i].cartas.length; j++) {
-                    $('.myCards .cards').append('<img src="./assets/imgs/svg/' + game.players[i].cartas[j].suit + game.players[i].cartas[j].value + '.svg" class="selectcard card' + (j + 1) + '" id="' + (j + 1) + '">')
-                }
+        if (game.endGame == true) {
+            $('.trucoShowEndGame').show();
+            if (game.teamsPoint.redTeam >= 12) {
+                $('.endGame .textStatus').html("<span class='redTT'>TIME VERMELHO VENCEU! " + game.teamsPoint.red + " - " + game.teamsPoint.blue + "</span> ");
+            } else {
+                $('.endGame .textStatus').html("<span class='blueTT'>TIME AZUL VENCEU! " + game.teamsPoint.blue + " - " + game.teamsPoint.red + "</span> ");
             }
-            if (game.players[i].isMe == false && game.myTeam == game.players[i].team) {
-                $('.topPlayer .p3').text(game.players[i].nome);
-                $('.topPlayer .p3').addClass(game.players[i].team);
-                if (game.players[i].idTurno == game.turno.player) {
-                    $('.topPlayer .p3').addClass('isTurno');
+        } else {
+            $('.trucoShowNotify').hide();
+            if (game.requestTruco.requested == true) {//verifica pedido de truco
+                if (game.requestTruco.status != 'Aceitamos' && game.requestTruco.status != 'Vamos correr') {
+                    $('.notify .text').html("<span class='" + game.requestTruco.by + "TT'>" + game.requestTruco.playerName + ":</span> " + game.requestTruco.status);
+                } else {
+                    $('.notify .text').html("<span class='" + game.requestTruco.to + "TT'>" + game.requestTruco.playerName + ":</span> " + game.requestTruco.status);
                 }
-                $('.topPlayer .cards img').remove();
-                for (var j = 0; j < game.players[i].numCartas; j++) {
-                    $('.topPlayer .cards').append('<img src="./assets/imgs/svg/cardback_' + game.players[i].team + '.svg" >')
+                $('.textStatus div').remove();
+                for (var i = 0; i < game.requestTruco.votosCont; i++) {
+                    $('.textStatus').append('<div><span class="' + game.requestTruco.to + 'TT">' + game.requestTruco.votacao[i].player + ':</span> ' + game.requestTruco.votacao[i].text + '</div>');
                 }
-            }
-        }
-        for (var i = 0; i < 4; i++) {//falta arrumar aqui, player saem com mesmo nome
-            if (game.players[i].idTurno == (myPos + 1) || (myPos == 4 && game.players[i].idTurno == 1)) {
-                $('.rightPlayer .p1').text(game.players[i].nome);
-                $('.rightPlayer .p1').addClass(game.players[i].team);
-                if (game.players[i].idTurno == game.turno.player) {
-                    $('.rightPlayer .p1').addClass('isTurno');
+                $('.notify .buttonGroup button').remove();
+                $('.trucoShowNotify').show();
+                if (game.requestTruco.status != 'Aceitamos' && game.requestTruco.status != 'Vamos correr') {
+                    if (myTeam == game.requestTruco.to) {
+                        if (game.requestTruco.value < 12) {
+                            $('.notify .buttonGroup').append('<button class="botao buttonG pedirTruco" onClick="pedirTruco(1)">PEDIR ' + (game.requestTruco.value + 3) + '!</button>');
+                        }
+                        $('.notify .buttonGroup').append('<button class="botao buttonG pedirTruco" onClick="pedirTruco(2)">ACEITAR</button>');
+                        $('.notify .buttonGroup').append('<button class="botao buttonG pedirTruco" onClick="pedirTruco(3)">CORRER</button>');
+                    }
                 }
-                $('.rightPlayer .cards img').remove();
-                for (var j = 0; j < game.players[i].numCartas; j++) {
-                    $('.rightPlayer .cards').append('<img src="./assets/imgs/svg/cardback_' + game.players[i].team + '.svg" >')
-                }
-            }
-            if (game.players[i].idTurno == (myPos - 1) || (myPos == 1 && game.players[i].idTurno == 4)) {
-                $('.leftPlayer .p2').text(game.players[i].nome);
-                $('.leftPlayer .p2').addClass(game.players[i].team);
-                if (game.players[i].idTurno == game.turno.player) {
-                    $('.leftPlayer .p2').addClass('isTurno');
-                }
-                $('.leftPlayer .cards img').remove();
-                for (var j = 0; j < game.players[i].numCartas; j++) {
-                    $('.leftPlayer .cards').append('<img src="./assets/imgs/svg/cardback_' + game.players[i].team + '.svg" >')
-                }
-            }
-        }
-        $('.placar .redTeam span').text(game.teamsPoint.red);/// pontuacao
-        $('.placar .blueTeam span').text(game.teamsPoint.blue);
 
-        $('.placarRound .redTeamRound span').text(game.roundPoints.red);
-        $('.placarRound .blueTeamRound span').text(game.roundPoints.blue);
-        $('.placarRound .empateRound span').text(game.roundPoints.empate);
+            } else {
+                turno = 0;
+                $('.isTurno').removeClass('isTurno');
+                for (var i = 0; i < 4; i++) {
+                    if (game.players[i].isMe == true) {
+                        $('.myCards .me').text(game.players[i].nome);
+                        $('.myCards .me').addClass(game.players[i].team);
+                        myPos = game.players[i].idTurno;
+                        myTeam = game.players[i].team;
+                        if (game.players[i].idTurno == game.turno.player) {
+                            turno = 1;
+                            $('.myCards .me').addClass('isTurno');
+                        }
+                        $('.myCards .cards img').remove();
+                        for (var j = 0; j < game.players[i].cartas.length; j++) {
+                            $('.myCards .cards').append('<img src="./assets/imgs/svg/' + game.players[i].cartas[j].suit + game.players[i].cartas[j].value + '.svg" class="selectcard card' + (j + 1) + '" id="' + (j + 1) + '">')
+                        }
+                    }
+                    if (game.players[i].isMe == false && game.myTeam == game.players[i].team) {
+                        $('.topPlayer .p3').text(game.players[i].nome);
+                        $('.topPlayer .p3').addClass(game.players[i].team);
+                        if (game.players[i].idTurno == game.turno.player) {
+                            $('.topPlayer .p3').addClass('isTurno');
+                        }
+                        $('.topPlayer .cards img').remove();
+                        for (var j = 0; j < game.players[i].numCartas; j++) {
+                            $('.topPlayer .cards').append('<img src="./assets/imgs/svg/cardback_' + game.players[i].team + '.svg" >')
+                        }
+                    }
+                }
+                for (var i = 0; i < 4; i++) {//falta arrumar aqui, player saem com mesmo nome
+                    if (game.players[i].idTurno == (myPos + 1) || (myPos == 4 && game.players[i].idTurno == 1)) {
+                        $('.rightPlayer .p1').text(game.players[i].nome);
+                        $('.rightPlayer .p1').addClass(game.players[i].team);
+                        if (game.players[i].idTurno == game.turno.player) {
+                            $('.rightPlayer .p1').addClass('isTurno');
+                        }
+                        $('.rightPlayer .cards img').remove();
+                        for (var j = 0; j < game.players[i].numCartas; j++) {
+                            $('.rightPlayer .cards').append('<img src="./assets/imgs/svg/cardback_' + game.players[i].team + '.svg" >')
+                        }
+                    }
+                    if (game.players[i].idTurno == (myPos - 1) || (myPos == 1 && game.players[i].idTurno == 4)) {
+                        $('.leftPlayer .p2').text(game.players[i].nome);
+                        $('.leftPlayer .p2').addClass(game.players[i].team);
+                        if (game.players[i].idTurno == game.turno.player) {
+                            $('.leftPlayer .p2').addClass('isTurno');
+                        }
+                        $('.leftPlayer .cards img').remove();
+                        for (var j = 0; j < game.players[i].numCartas; j++) {
+                            $('.leftPlayer .cards').append('<img src="./assets/imgs/svg/cardback_' + game.players[i].team + '.svg" >')
+                        }
+                    }
+                }
+                $('.placar .redTeam span').text(game.teamsPoint.red);/// pontuacao
+                $('.placar .blueTeam span').text(game.teamsPoint.blue);
 
-        $('.coringa img').attr("src", "./assets/imgs/svg/" + game.coringa.suit + game.coringa.value + ".svg");
+                $('.placarRound .redTeamRound span').text(game.roundPoints.red);
+                $('.placarRound .blueTeamRound span').text(game.roundPoints.blue);
+                $('.placarRound .empateRound span').text(game.roundPoints.empate);
 
-        $('.centerCards img').remove();//// centro da mesa
-        for (var i = 0; i < game.centroMesa.length; i++) {
-            if (game.centroMesa[i].playerId == myPos) {
-                $('.centerCards').append('<img src="./assets/imgs/svg/' + game.centroMesa[i].carta.suit + game.centroMesa[i].carta.value + '.svg" class="fromBottomCard">')
-            }
-            if (game.centroMesa[i].playerId == (myPos - 1) || (myPos == 1 && game.centroMesa[i].playerId == 4)) {
-                $('.centerCards').append('<img src="./assets/imgs/svg/' + game.centroMesa[i].carta.suit + game.centroMesa[i].carta.value + '.svg" class="fromLeftCard">')
-            }
-            if (game.centroMesa[i].playerId == (myPos + 1) || (myPos == 4 && game.centroMesa[i].playerId == 1)) {
-                $('.centerCards').append('<img src="./assets/imgs/svg/' + game.centroMesa[i].carta.suit + game.centroMesa[i].carta.value + '.svg" class="fromRightCard">')
-            }
-            if (game.centroMesa[i].playerId == (myPos - 2) || game.centroMesa[i].playerId == (myPos + 2)) {
-                $('.centerCards').append('<img src="./assets/imgs/svg/' + game.centroMesa[i].carta.suit + game.centroMesa[i].carta.value + '.svg" class="fromTopCard">')
+                $('.coringa img').attr("src", "./assets/imgs/svg/" + game.coringa.suit + game.coringa.value + ".svg");
+
+                $('.centerCards img').remove();//// centro da mesa
+                for (var i = 0; i < game.centroMesa.length; i++) {
+                    if (game.centroMesa[i].playerId == myPos) {
+                        $('.centerCards').append('<img src="./assets/imgs/svg/' + game.centroMesa[i].carta.suit + game.centroMesa[i].carta.value + '.svg" class="fromBottomCard">')
+                    }
+                    if (game.centroMesa[i].playerId == (myPos - 1) || (myPos == 1 && game.centroMesa[i].playerId == 4)) {
+                        $('.centerCards').append('<img src="./assets/imgs/svg/' + game.centroMesa[i].carta.suit + game.centroMesa[i].carta.value + '.svg" class="fromLeftCard">')
+                    }
+                    if (game.centroMesa[i].playerId == (myPos + 1) || (myPos == 4 && game.centroMesa[i].playerId == 1)) {
+                        $('.centerCards').append('<img src="./assets/imgs/svg/' + game.centroMesa[i].carta.suit + game.centroMesa[i].carta.value + '.svg" class="fromRightCard">')
+                    }
+                    if (game.centroMesa[i].playerId == (myPos - 2) || game.centroMesa[i].playerId == (myPos + 2)) {
+                        $('.centerCards').append('<img src="./assets/imgs/svg/' + game.centroMesa[i].carta.suit + game.centroMesa[i].carta.value + '.svg" class="fromTopCard">')
+                    }
+                }
             }
         }
     }

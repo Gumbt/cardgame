@@ -147,7 +147,7 @@ io.on('connection', socket => {
     socket.on('sendCard', function (infos) {
         var index = rooms.findIndex((e) => e.name === socket.room);
         if (index != -1) {
-            if (rooms[index].game.table.turno.player == infos.player) {
+            if (rooms[index].game.table.turno.player == infos.player && rooms[index].game.table.requestTruco.requested == false) {
                 var indexUser = rooms[index].game.players.findIndex((e) => e.id == socket.id);
                 var carta = rooms[index].game.players[indexUser].cartas[infos.carta];
                 rooms[index].game.players[indexUser].cartas.splice(infos.carta, 1);
@@ -173,30 +173,31 @@ io.on('connection', socket => {
             'c', 'h', 's', 'd'
         ]
         for (var i = 1; i < rooms[index].game.table.centroMesa.length; i++) {
-            if (rooms[index].game.table.centroMesa[i].carta.value == (rooms[index].game.table.coringa.value + 1) || (rooms[index].game.table.centroMesa[i].carta.value == 1 && rooms[index].game.table.coringa.value == 13) || (rooms[index].game.table.centroMesa[i].carta.value == 11 && rooms[index].game.table.coringa.value == 7)) {//ve se a carta e coringa
-                if (maior.carta.value == (rooms[index].game.table.coringa.value + 1) || (maior.carta.value == 1 && rooms[index].game.table.coringa.value == 13) || (maior.carta.value == 11 && rooms[index].game.table.coringa.value == 7)) {//ve se a maior carta tambem é coringa
+            if (maior.carta.value == (rooms[index].game.table.coringa.value + 1) || (maior.carta.value == 1 && rooms[index].game.table.coringa.value == 13) || (maior.carta.value == 11 && rooms[index].game.table.coringa.value == 7)) {//ve se a maior carta tambem é coringa 
+                if (rooms[index].game.table.centroMesa[i].carta.value == (rooms[index].game.table.coringa.value + 1) || (rooms[index].game.table.centroMesa[i].carta.value == 1 && rooms[index].game.table.coringa.value == 13) || (rooms[index].game.table.centroMesa[i].carta.value == 11 && rooms[index].game.table.coringa.value == 7)) {//ve se a carta e coringa
                     var rankNaipeMaior = rankNaipes.findIndex((e) => e == maior.carta.suit)
                     var rankNaipeAtual = rankNaipes.findIndex((e) => e == rooms[index].game.table.centroMesa[i].carta.suit);
                     if (rankNaipeAtual < rankNaipeMaior) {
                         maior = rooms[index].game.table.centroMesa[i];
                         empate = 0;
                     }
-                } else {
+                }
+            } else {
+                if (rooms[index].game.table.centroMesa[i].carta.value == (rooms[index].game.table.coringa.value + 1) || (rooms[index].game.table.centroMesa[i].carta.value == 1 && rooms[index].game.table.coringa.value == 13) || (rooms[index].game.table.centroMesa[i].carta.value == 11 && rooms[index].game.table.coringa.value == 7)) {//ve se a carta e coringa
                     maior = rooms[index].game.table.centroMesa[i];
                     empate = 0;
-                }
-
-            } else {
-                var rankMaior = rankCartas.findIndex((e) => e == maior.carta.value);
-                var rankAtual = rankCartas.findIndex((e) => e == rooms[index].game.table.centroMesa[i].carta.value);
-                if (rankAtual < rankMaior) {
-                    maior = rooms[index].game.table.centroMesa[i];
-                }
-                if (rankAtual == rankMaior) {//n empata mesmo time
-                    var indexUserMaior = rooms[index].game.players.findIndex((e) => e.idTurno == maior.playerId);
-                    var indexUserAtual = rooms[index].game.players.findIndex((e) => e.idTurno == rooms[index].game.table.centroMesa[i].playerId);
-                    if (rooms[index].game.players[indexUserMaior].team != rooms[index].game.players[indexUserAtual].team) {
-                        empate = 1;
+                } else {
+                    var rankMaior = rankCartas.findIndex((e) => e == maior.carta.value);
+                    var rankAtual = rankCartas.findIndex((e) => e == rooms[index].game.table.centroMesa[i].carta.value);
+                    if (rankAtual < rankMaior) {
+                        maior = rooms[index].game.table.centroMesa[i];
+                    }
+                    if (rankAtual == rankMaior) {//n empata mesmo time
+                        var indexUserMaior = rooms[index].game.players.findIndex((e) => e.idTurno == maior.playerId);
+                        var indexUserAtual = rooms[index].game.players.findIndex((e) => e.idTurno == rooms[index].game.table.centroMesa[i].playerId);
+                        if (rooms[index].game.players[indexUserMaior].team != rooms[index].game.players[indexUserAtual].team) {
+                            empate = 1;
+                        }
                     }
                 }
             }
@@ -206,8 +207,14 @@ io.on('connection', socket => {
             var indexUser = rooms[index].game.players.findIndex((e) => e.idTurno == maior.playerId);//pegar time do vencedor
             if (rooms[index].game.players[indexUser].team == 'red') {
                 rooms[index].game.table.roundPoints.red++;
+                if (rooms[index].game.table.roundPoints.quemGanhouPrimeiro == '') {
+                    rooms[index].game.table.roundPoints.quemGanhouPrimeiro = 'red';
+                }
             } else {
                 rooms[index].game.table.roundPoints.blue++;
+                if (rooms[index].game.table.roundPoints.quemGanhouPrimeiro == '') {
+                    rooms[index].game.table.roundPoints.quemGanhouPrimeiro = 'blue';
+                }
             }
         } else {
             rooms[index].game.table.roundPoints.empate++;
@@ -223,16 +230,26 @@ io.on('connection', socket => {
     function verificaFimRound(index) {
         var endRound = 0;
         if (rooms[index].game.table.roundPoints.empate > 0) {
-            if (rooms[index].game.table.roundPoints.red > 0) {
-                rooms[index].game.table.teamsPoint.red += rooms[index].game.table.valueTruco;
-                endRound = 1;
-            }
-            if (rooms[index].game.table.roundPoints.blue > 0) {
-                rooms[index].game.table.teamsPoint.blue += rooms[index].game.table.valueTruco;
-                endRound = 1;
-            }
-            if (rooms[index].game.table.roundPoints.empate == 3) {
-                endRound = 1;
+            if (rooms[index].game.table.roundPoints.red == 1 && rooms[index].game.table.roundPoints.blue == 1) {
+                if (rooms[index].game.table.roundPoints.quemGanhouPrimeiro == 'red') {
+                    rooms[index].game.table.teamsPoint.red += rooms[index].game.table.valueTruco;
+                    endRound = 1;
+                } else {
+                    rooms[index].game.table.teamsPoint.blue += rooms[index].game.table.valueTruco;
+                    endRound = 1;
+                }
+            } else {
+                if (rooms[index].game.table.roundPoints.red > 0) {
+                    rooms[index].game.table.teamsPoint.red += rooms[index].game.table.valueTruco;
+                    endRound = 1;
+                }
+                if (rooms[index].game.table.roundPoints.blue > 0) {
+                    rooms[index].game.table.teamsPoint.blue += rooms[index].game.table.valueTruco;
+                    endRound = 1;
+                }
+                if (rooms[index].game.table.roundPoints.empate == 3) {
+                    endRound = 1;
+                }
             }
         }
         if (rooms[index].game.table.roundPoints.red == 2) {
@@ -244,28 +261,168 @@ io.on('connection', socket => {
             endRound = 1;
         }
         if (endRound == 1) {//acabou o round
-            if (rooms[index].game.table.turno.lastStart == rooms[index].max) {//ve o player q comeca o proximo round
-                rooms[index].game.table.turno.player = 1;
-                rooms[index].game.table.turno.lastStart = 1;
-            } else {
-                rooms[index].game.table.turno.lastStart++;
-                rooms[index].game.table.turno.player = rooms[index].game.table.turno.lastStart;
-            }
-            var deck = new Deck();
-            for (var i = 0; i < rooms[index].max; i++) {//gera novas cartas pros players
-                rooms[index].game.players[i].numCartas = 3;
-                rooms[index].game.players[i].cartas = [];
-                for (var j = 0; j < 3; j++) {
-                    rooms[index].game.players[i].cartas.push(deck.deal());
+            criaNovoRound(index);
+        }
+        if (rooms[index].game.table.teamsPoint.blue >= 12 || rooms[index].game.table.teamsPoint.red >= 12) {
+            rooms[index].game.table.endGame = true;
+            setTimeout(function () {
+                emitCards(index);
+                rooms[index].game = { active: false };
+                rooms[index].gameStatus = 1;
+
+            }, 2000);
+        } else {
+            /*if (rooms[index].game.table.teamsPoint.blue == 11 || rooms[index].game.table.teamsPoint.red == 11) {
+                if(rooms[index].game.table.teamsPoint.blue == 11) rooms[index].game.table.maoOnzeBlue = true;
+                if(rooms[index].game.table.teamsPoint.red == 11) rooms[index].game.table.maoOnzeRed = true;
+
+                maoDeOnzeVerify(index);
+            } else {*/
+            emitCards(index);
+            //}
+        }
+    }
+    /*function emitCardsMaoOnze(index) {
+        for (var j = 0; j < 4; j++) {
+            var privatePlayers = [];
+            for (var i = 0; i < 4; i++) {
+                if (rooms[index].game.players[i].id == rooms[index].game.players[j].id) {//entra aki se for eu
+                    privatePlayers.push({
+                        isMe: true,
+                        ...rooms[index].game.players[i]
+                    });
+                } else {
+                    if (team == rooms[index].game.players[i].team && rooms[index].game.players[j].team == team) {
+                        privatePlayers.push({
+                            isMe: false,
+                            ...rooms[index].game.players[i]
+                        })
+                    } else {
+                        privatePlayers.push({
+                            isMe: false,
+                            idTurno: rooms[index].game.players[i].idTurno,
+                            nome: rooms[index].game.players[i].nome,
+                            id: rooms[index].game.players[i].id,
+                            team: rooms[index].game.players[i].team,
+                            numCartas: rooms[index].game.players[i].numCartas,
+                        })
+                    }
                 }
             }
-            rooms[index].game.table.coringa = deck.deal();
-
-            rooms[index].game.table.roundPoints.red = 0;
-            rooms[index].game.table.roundPoints.blue = 0;
-            rooms[index].game.table.roundPoints.empate = 0;
+            var removeCards = {
+                active: true,
+                myTeam: rooms[index].game.players[j].team,
+                ...rooms[index].game.table,
+                players: privatePlayers
+            }
+            io.to(`${rooms[index].game.players[j].id}`).emit('gameStart', removeCards);
         }
-        emitCards(index);
+    }*/
+    function criaNovoRound(index) {
+        if (rooms[index].game.table.turno.lastStart == rooms[index].max) {//ve o player q comeca o proximo round
+            rooms[index].game.table.turno.player = 1;
+            rooms[index].game.table.turno.lastStart = 1;
+        } else {
+            rooms[index].game.table.turno.lastStart++;
+            rooms[index].game.table.turno.player = rooms[index].game.table.turno.lastStart;
+        }
+        var deck = new Deck();
+        for (var i = 0; i < rooms[index].max; i++) {//gera novas cartas pros players
+            rooms[index].game.players[i].numCartas = 3;
+            rooms[index].game.players[i].cartas = [];
+            for (var j = 0; j < 3; j++) {
+                rooms[index].game.players[i].cartas.push(deck.deal());
+            }
+        }
+        zeraPedidoTruco(index);
+        rooms[index].game.table.valueTruco = 1;
+        rooms[index].game.table.coringa = deck.deal();
+        rooms[index].game.table.roundPoints.quemGanhouPrimeiro = '';
+        rooms[index].game.table.roundPoints.red = 0;
+        rooms[index].game.table.roundPoints.blue = 0;
+        rooms[index].game.table.roundPoints.empate = 0;
+    }
+    socket.on('pedirTruco', function (infos) {
+        var index = rooms.findIndex((e) => e.name === socket.room);
+        if (index != -1) {
+            var indexUser = rooms[index].game.players.findIndex((e) => e.id == socket.id);//acha o usuario q requisito
+            var team = rooms[index].game.players[indexUser].team;//time do usuario q requisito
+            if (rooms[index].game.table.requestTruco.requested == false) {//faz o pedido
+                requestTruco(index, indexUser, team);
+            } else {//ve se vao aceitar o pedido
+                if (team == rooms[index].game.table.requestTruco.to) {
+                    var verificaVoto = rooms[index].game.table.requestTruco.votacao.findIndex((e) => e.id == socket.id);//ve se o player ja votou
+                    if (verificaVoto == -1) {
+                        var text;
+                        if (infos.value == 1) text = 'TRUCO';
+                        if (infos.value == 2) text = 'Aceito';
+                        if (infos.value == 3) text = 'To fora';
+                        rooms[index].game.table.requestTruco.votacao.push({ player: rooms[index].game.players[indexUser].nome, status: infos.value, text, id: socket.id });
+                        rooms[index].game.table.requestTruco.votosCont++;
+                        emitCards(index);
+                        if (rooms[index].game.table.requestTruco.votosCont == 2 || infos.value == 1) {
+                            setTimeout(function () {
+                                contabilizaVotacao(index, indexUser, team);
+                            }, 2000);
+                        }
+                    }
+
+                }
+            }
+        }
+    });
+    function contabilizaVotacao(index, indexUser, team) {
+        if (rooms[index].game.table.requestTruco.votacao[0].status == 1 || rooms[index].game.table.requestTruco.votacao[1].status == 1) {//pediu 6 ou 9 ou 12
+            rooms[index].game.table.requestTruco.votosCont = 0;
+            rooms[index].game.table.requestTruco.votacao = [];
+            rooms[index].game.table.valueTruco = rooms[index].game.table.requestTruco.value;
+            requestTruco(index, indexUser, team);
+        } else {
+            if (rooms[index].game.table.requestTruco.votacao[0].status == 2 || rooms[index].game.table.requestTruco.votacao[1].status == 2) {// 1 deles aceitou
+                rooms[index].game.table.requestTruco.playerName = 'Time ' + team;
+                rooms[index].game.table.requestTruco.status = 'Aceitamos';
+                rooms[index].game.table.valueTruco = rooms[index].game.table.requestTruco.value;
+                rooms[index].game.table.requestTruco.votosCont = 0;
+                rooms[index].game.table.requestTruco.votacao = [];
+                emitCards(index);
+                setTimeout(function () {
+                    rooms[index].game.table.requestTruco.requested = false;
+                    emitCards(index);
+                }, 2000);
+            } else {//os dois correram
+                if (team == 'red') rooms[index].game.table.teamsPoint.red += rooms[index].game.table.valueTruco;
+                else rooms[index].game.table.teamsPoint.blue += rooms[index].game.table.valueTruco;
+                rooms[index].game.table.requestTruco.status = 'Vamos correr';
+                rooms[index].game.table.requestTruco.playerName = 'Time ' + team;
+                emitCards(index);
+                setTimeout(function () {
+                    criaNovoRound(index);
+                    emitCards(index);
+                }, 2000);
+            }
+        }
+
+    }
+    function requestTruco(index, indexUser, team) {
+        if (team !== rooms[index].game.table.requestTruco.by && rooms[index].game.table.requestTruco.value < 12) {//ve se o time q ta fazendo pedido e diferente do ultimo q fez
+            rooms[index].game.table.requestTruco.requested = true;
+            rooms[index].game.table.requestTruco.by = team;
+            rooms[index].game.table.requestTruco.to = (team == 'red') ? 'blue' : 'red';
+            rooms[index].game.table.requestTruco.playerName = rooms[index].game.players[indexUser].nome;
+            rooms[index].game.table.requestTruco.value += 3;
+            rooms[index].game.table.requestTruco.status = (rooms[index].game.table.requestTruco.value == 3) ? 'Pedindo Truco' : 'Pedindo ' + rooms[index].game.table.requestTruco.value;
+            emitCards(index);
+        }
+    }
+    function zeraPedidoTruco(index) {
+        rooms[index].game.table.requestTruco.requested = false;
+        rooms[index].game.table.requestTruco.by = '';
+        rooms[index].game.table.requestTruco.to = '';
+        rooms[index].game.table.requestTruco.playerName = '';
+        rooms[index].game.table.requestTruco.value = 0;
+        rooms[index].game.table.requestTruco.votacao = [];
+        rooms[index].game.table.requestTruco.votosCont = 0;
+        rooms[index].game.table.requestTruco.status = '';
     }
 });
 
