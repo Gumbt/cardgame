@@ -493,7 +493,8 @@
     }
 
     .trucoNotify,
-    .trucoEndGame {
+    .trucoEndGame,
+    .decideMaoOnzeNotify {
         z-index: 500;
         position: fixed;
         width: 100%;
@@ -504,12 +505,21 @@
     }
 
     .trucoShowNotify,
-    .trucoShowEndGame {
+    .trucoShowEndGame,
+    .decideMaoOnze {
         display: none;
     }
-
+    .cardGroup1,.cardGroup2{
+        display: flex;
+        width: 100%;
+        flex-direction: column;
+    }
+    .cardGroup1 img,.cardGroup2 img{
+        height: 100px;
+    }
     .trucoNotify .notify,
-    .endGame {
+    .endGame,
+    .decideMaoOnzeNotify .maoNotify {
         z-index: 501;
         padding: 10px;
         background: white;
@@ -519,7 +529,8 @@
     }
 
     .trucoNotify .fundo,
-    .trucoEndGame {
+    .trucoEndGame,
+    .decideMaoOnzeNotify .fundo {
         z-index: 499;
         position: fixed;
         width: 100%;

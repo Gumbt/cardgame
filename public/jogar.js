@@ -1,4 +1,4 @@
-var socket = io('http://localhost:3000/');
+var socket = io('https://casigumb.herokuapp.com/');
 var username = localStorage['user'];
 if (username == '' || username == null) {
     window.location = '/';
@@ -59,6 +59,10 @@ function pedirTruco(valueI) {
     socket.emit('pedirTruco', { value: parseInt(valueI) });
 }
 
+function statusMaoOnze(valueI) {
+    socket.emit('statusMaoOnze', { value: parseInt(valueI) });
+}
+
 $('.cards').on('click', '.selectcard', function () {
     if ($(this).hasClass('selected')) {
         if (turno == 1 && myPos != 0) {
@@ -110,6 +114,42 @@ function gameS(game) {
                 }
 
             } else {
+                $('.decideMaoOnze').hide();
+                if (game.onze.maoOnzeStatus == 'decide') {
+                    $('.decideMaoOnze').show();
+                    $('.textStatusMaoOnze div').remove();
+                    for (var i = 0; i < game.onze.votosCont; i++) {
+                        $('.textStatusMaoOnze').append('<div><span class="' + game.onze.maoOnze + 'TT">' + game.onze.votacao[i].player + ':</span> ' + game.onze.votacao[i].text + '</div>');
+                    }
+                    if (game.onze.maoOnze == myTeam) {
+                        $('.maoNotify .text').html("<span class='" + game.onze.maoOnze + "TT'>Time " + game.onze.maoOnze + ":</span> " + game.onze.message);
+                        var cont = 1;
+                        for (var i = 0; i < 4; i++) {
+                            if (game.players[i].team == game.onze.maoOnze) {
+                                $('.maoNotify .cardGroup' + cont + ' .cartas img').remove();
+                                $('.maoNotify .cardGroup' + cont + ' span').remove();
+                                for (var j = 0; j < game.players[i].numCartas; j++) {
+                                    $('.maoNotify .cardGroup' + cont + ' .cartas').append('<img src="./assets/imgs/svg/' + game.players[i].cartas[j].suit + game.players[i].cartas[j].value + '.svg">');
+                                }
+                                if (myPos == game.players[i].idTurno) {
+                                    $('.maoNotify .cardGroup' + cont).prepend("<span>Suas cartas:</span>");
+                                } else {
+                                    $('.maoNotify .cardGroup' + cont).prepend("<span>Cartas de seu companheiro:</span>");
+                                }
+                                cont++;
+                            }
+                        }
+                        $('.maoNotify .buttonGroup button').remove();
+                        if (game.onze.message != 'Vamos correr' && game.onze.message != 'Aceitamos a mão de onze') {
+                            $('.maoNotify .buttonGroup').append('<button class="botao buttonG pedirTruco" onClick="statusMaoOnze(1)">ACEITAR</button>');
+                            $('.maoNotify .buttonGroup').append('<button class="botao buttonG pedirTruco" onClick="statusMaoOnze(2)">CORRER</button>');
+                        }
+                    } else {
+                        $('.maoNotify .buttonGroup button').remove();
+                        $('.maoNotify .text').html("<span class='" + game.onze.maoOnze + "TT'>Time " + game.onze.maoOnze + ":</span> Estamos decidindo mão de onze");
+                    }
+                }
+
                 turno = 0;
                 $('.isTurno').removeClass('isTurno');
                 for (var i = 0; i < 4; i++) {
@@ -123,8 +163,15 @@ function gameS(game) {
                             $('.myCards .me').addClass('isTurno');
                         }
                         $('.myCards .cards img').remove();
-                        for (var j = 0; j < game.players[i].cartas.length; j++) {
-                            $('.myCards .cards').append('<img src="./assets/imgs/svg/' + game.players[i].cartas[j].suit + game.players[i].cartas[j].value + '.svg" class="selectcard card' + (j + 1) + '" id="' + (j + 1) + '">')
+                        if (game.onze.maoOnze == 'ambos') {
+                            for (var j = 0; j < game.players[i].numCartas; j++) {
+                                $('.myCards .cards').append('<img src="./assets/imgs/svg/cardback_' + game.players[i].team + '.svg" class="selectcard card' + (j + 1) + '" id="' + (j + 1) + '">')
+                            }
+                        } else {
+                            for (var j = 0; j < game.players[i].cartas.length; j++) {
+                                $('.myCards .cards').append('<img src="./assets/imgs/svg/' + game.players[i].cartas[j].suit + game.players[i].cartas[j].value + '.svg" class="selectcard card' + (j + 1) + '" id="' + (j + 1) + '">')
+                            }
+
                         }
                     }
                     if (game.players[i].isMe == false && game.myTeam == game.players[i].team) {
@@ -187,6 +234,7 @@ function gameS(game) {
                         $('.centerCards').append('<img src="./assets/imgs/svg/' + game.centroMesa[i].carta.suit + game.centroMesa[i].carta.value + '.svg" class="fromTopCard">')
                     }
                 }
+
             }
         }
     }

@@ -47,10 +47,15 @@ class Game {
             }],
             table: {
                 endGame: false,
-                maoOnzeRed: false,
-                maoOnzeBlue: false,
+                onze: {
+                    maoOnze: '',
+                    maoOnzeStatus: '',
+                    message: '',
+                    votacao: [],
+                    votosCont: 0,
+                },
                 teamsPoint: {
-                    red: 0,
+                    red: 10,
                     blue: 0
                 },
                 coringa: deck1.deal(),
