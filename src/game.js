@@ -55,7 +55,7 @@ class Game {
                     votosCont: 0,
                 },
                 teamsPoint: {
-                    red: 10,
+                    red: 0,
                     blue: 0
                 },
                 coringa: deck1.deal(),
