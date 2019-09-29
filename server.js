@@ -191,13 +191,15 @@ io.on('connection', socket => {
                     var rankAtual = rankCartas.findIndex((e) => e == rooms[index].game.table.centroMesa[i].carta.value);
                     if (rankAtual < rankMaior) {
                         maior = rooms[index].game.table.centroMesa[i];
-                    }
-                    if (rankAtual == rankMaior) {//n empata mesmo time
-                        var indexUserMaior = rooms[index].game.players.findIndex((e) => e.idTurno == maior.playerId);
-                        var indexUserAtual = rooms[index].game.players.findIndex((e) => e.idTurno == rooms[index].game.table.centroMesa[i].playerId);
-                        if (rooms[index].game.players[indexUserMaior].team != rooms[index].game.players[indexUserAtual].team) {
-                            empate = 1;
+                    } else {
+                        if (rankAtual == rankMaior) {//n empata mesmo time
+                            var indexUserMaior = rooms[index].game.players.findIndex((e) => e.idTurno == maior.playerId);
+                            var indexUserAtual = rooms[index].game.players.findIndex((e) => e.idTurno == rooms[index].game.table.centroMesa[i].playerId);
+                            if (rooms[index].game.players[indexUserMaior].team != rooms[index].game.players[indexUserAtual].team) {
+                                empate = 1;
+                            }
                         }
+
                     }
                 }
             }
@@ -220,8 +222,8 @@ io.on('connection', socket => {
             rooms[index].game.table.roundPoints.empate++;
         }
         emitCards(index);
+        rooms[index].game.table.centroMesa = [];//limpa mesa
         setTimeout(function () {
-            rooms[index].game.table.centroMesa = [];//limpa mesa
             //verifica se ja acabou o round
             verificaFimRound(index);
 
@@ -431,8 +433,8 @@ io.on('connection', socket => {
                 rooms[index].game.table.requestTruco.votosCont = 0;
                 rooms[index].game.table.requestTruco.votacao = [];
                 emitCards(index);
+                rooms[index].game.table.requestTruco.requested = false;
                 setTimeout(function () {
-                    rooms[index].game.table.requestTruco.requested = false;
                     emitCards(index);
                 }, 2000);
             } else {//os dois correram
@@ -441,8 +443,8 @@ io.on('connection', socket => {
                 rooms[index].game.table.requestTruco.status = 'Vamos correr';
                 rooms[index].game.table.requestTruco.playerName = 'Time ' + team;
                 emitCards(index);
+                criaNovoRound(index);
                 setTimeout(function () {
-                    criaNovoRound(index);
                     verificaFimGame(index);
                 }, 2000);
             }
@@ -496,8 +498,8 @@ io.on('connection', socket => {
                             rooms[index].game.table.onze.maoOnze = '';
                             rooms[index].game.table.onze.maoOnzeStatus = '';
                             rooms[index].game.table.valueTruco = 3;
+                            rooms[index].game.table.onze.maoOnzeStatus = 'aceito';
                             setTimeout(function () {
-                                rooms[index].game.table.onze.maoOnzeStatus = 'aceito';
                                 emitCardsMaoOnze(index);
                             }, 2000);
                         } else {
@@ -505,16 +507,16 @@ io.on('connection', socket => {
                                 rooms[index].game.table.onze.maoOnzeStatus = 'decide';
                                 rooms[index].game.table.onze.message = 'Vamos correr';
                                 emitCardsMaoOnze(index);
+                                if (rooms[index].game.table.onze.maoOnze == 'red') rooms[index].game.table.teamsPoint.blue += rooms[index].game.table.valueTruco;
+                                else rooms[index].game.table.teamsPoint.red += rooms[index].game.table.valueTruco;
+                                rooms[index].game.table.onze.maoOnzeStatus = 'corremos';
+                                rooms[index].game.table.onze.votosCont = 0;
+                                rooms[index].game.table.onze.votacao = [];
+                                rooms[index].game.table.onze.message = '';
+                                rooms[index].game.table.onze.maoOnze = '';
+                                rooms[index].game.table.onze.maoOnzeStatus = '';
+                                criaNovoRound(index);
                                 setTimeout(function () {
-                                    if (rooms[index].game.table.onze.maoOnze == 'red') rooms[index].game.table.teamsPoint.blue += rooms[index].game.table.valueTruco;
-                                    else rooms[index].game.table.teamsPoint.red += rooms[index].game.table.valueTruco;
-                                    rooms[index].game.table.onze.maoOnzeStatus = 'corremos';
-                                    rooms[index].game.table.onze.votosCont = 0;
-                                    rooms[index].game.table.onze.votacao = [];
-                                    rooms[index].game.table.onze.message = '';
-                                    rooms[index].game.table.onze.maoOnze = '';
-                                    rooms[index].game.table.onze.maoOnzeStatus = '';
-                                    criaNovoRound(index);
                                     verificaFimGame(index);
                                 }, 2000);
                             }
