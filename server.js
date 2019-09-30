@@ -68,12 +68,12 @@ io.on('connection', socket => {
     });
     socket.on('go', function () {
         var index = rooms.findIndex((e) => e.name === socket.room);
-        rooms[index].readyCont++;
         if (rooms[index].gameStatus != 2) {
             rooms[index].gameStatus = 2;
             rooms[index].status = 'IN GAME';
             rooms[index] = { ...rooms[index], ...new Game(rooms[index].usersname, rooms[index].usersid) };
         }
+        console.log(rooms[index].usersname, rooms[index].usersid)
         emitCards(index);
         io.emit('dispRooms', rooms);
     });
@@ -111,7 +111,7 @@ io.on('connection', socket => {
     socket.on('disconnect', function () {
         var index = rooms.findIndex((e) => e.name === socket.room);
         if (index != -1) {
-            rooms[index].q--;
+
             if (rooms[index].q == 0) {
                 rooms[index].gameStatus = 1;
                 rooms[index].status = 'waiting...';
@@ -125,8 +125,11 @@ io.on('connection', socket => {
                 }
             }
             var indexUser = rooms[index].usersid.findIndex((e) => e == socket.id);
-            rooms[index].usersid.splice(indexUser, 1);
-            rooms[index].usersname.splice(indexUser, 1);
+            if (indexUser != -1) {
+                rooms[index].usersid.splice(indexUser, 1);
+                rooms[index].usersname.splice(indexUser, 1);
+                rooms[index].q--;
+            }
             socket.leave(socket.room);
             updateRoom();
         }
@@ -271,13 +274,22 @@ io.on('connection', socket => {
     }
     function verificaFimGame(index) {
         if (rooms[index].game.table.teamsPoint.blue >= 12 || rooms[index].game.table.teamsPoint.red >= 12) {
-            rooms[index].game.table.endGame = true;
+            emitCards(index);
             setTimeout(function () {
-                emitCards(index);
-                rooms[index].game = { active: false };
-                rooms[index].gameStatus = 1;
+                rooms[index].game.table.endGame = true;
 
-            }, 2000);
+                emitCards(index);
+                socket.leave(socket.room);
+                if (rooms[index].gameStatus != 1) {
+                    rooms[index].game = { active: false };
+                    rooms[index].gameStatus = 1;
+                    rooms[index].usersid = [];
+                    rooms[index].usersname = [];
+                    rooms[index].q = 0;
+                    rooms[index].status = 'waiting...';
+                }
+                io.emit('dispRooms', rooms);
+            }, 1000);
         } else {
             if (rooms[index].game.table.teamsPoint.blue == 11 || rooms[index].game.table.teamsPoint.red == 11) {
                 if (rooms[index].game.table.teamsPoint.blue == 11) rooms[index].game.table.onze.maoOnze = 'blue';
