@@ -43,7 +43,14 @@ io.on('connection', socket => {
                     var index = rooms.findIndex((e) => e.name === socket.room);
                     if (index != -1) {
                         rooms[index].q--;
+                        console.log(rooms[index].usersid, rooms[index].usersname)
+                        var indexUser = rooms[index].usersid.findIndex((e) => e == socket.id);
+                        if (indexUser != -1) {
+                            rooms[index].usersid.splice(indexUser, 1);
+                            rooms[index].usersname.splice(indexUser, 1);
+                        }
                         socket.leave(socket.room);
+                        console.log(rooms[index].usersid, rooms[index].usersname)
                     }
                     if (rooms[index2].gameStatus == 2) {//se o jogo tiver ativo adiciona o id
                         var playerIndex = rooms[index2].game.players.findIndex((e) => e.id == '');
