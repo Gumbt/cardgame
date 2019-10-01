@@ -37,32 +37,36 @@ io.on('connection', socket => {
             if (rooms[index2].q == rooms[index2].max) {
                 //fullgame
             } else {
-                var index = rooms.findIndex((e) => e.name === socket.room);
-                if (index != -1) {
-                    rooms[index].q--;
-                    socket.leave(socket.room);
-                }
-                if (rooms[index2].gameStatus == 2) {//se o jogo tiver ativo adiciona o id
-                    var playerIndex = rooms[index2].game.players.findIndex((e) => e.id == '');
+                var playerI = rooms[index2].usersid.findIndex((e) => e == socket.id);
+                if (playerI == -1) {//ve se o player ja n ta no novo sv
 
-                    if (playerIndex != -1) {
-                        rooms[index2].game.players[playerIndex].id = socket.id;
-                        rooms[index2].game.players[playerIndex].nome = socket.username;
-                        emitCards(index2);
+                    var index = rooms.findIndex((e) => e.name === socket.room);
+                    if (index != -1) {
+                        rooms[index].q--;
+                        socket.leave(socket.room);
                     }
+                    if (rooms[index2].gameStatus == 2) {//se o jogo tiver ativo adiciona o id
+                        var playerIndex = rooms[index2].game.players.findIndex((e) => e.id == '');
 
+                        if (playerIndex != -1) {
+                            rooms[index2].game.players[playerIndex].id = socket.id;
+                            rooms[index2].game.players[playerIndex].nome = socket.username;
+                            emitCards(index2);
+                        }
+
+                    }
+                    rooms[index2].q++;
+                    rooms[index2].usersid.push(socket.id);
+                    rooms[index2].usersname.push(socket.username);
+                    socket.join(newroom);
+                    socket.room = newroom;
+                    socket.roomId = index2;
+                    if (rooms[index2].q == rooms[index2].max) {
+                        io.in(socket.room).emit('ready', true);
+                    }
+                    updateRoom();
+                    io.emit('dispRooms', rooms);
                 }
-                rooms[index2].q++;
-                rooms[index2].usersid.push(socket.id);
-                rooms[index2].usersname.push(socket.username);
-                socket.join(newroom);
-                socket.room = newroom;
-                socket.roomId = index2;
-                if (rooms[index2].q == rooms[index2].max) {
-                    io.in(socket.room).emit('ready', true);
-                }
-                updateRoom();
-                io.emit('dispRooms', rooms);
             }
         }
     });
@@ -73,7 +77,7 @@ io.on('connection', socket => {
             rooms[index].status = 'IN GAME';
             rooms[index] = { ...rooms[index], ...new Game(rooms[index].usersname, rooms[index].usersid) };
         }
-        console.log(rooms[index].usersname, rooms[index].usersid)
+        //console.log(rooms[index].usersname, rooms[index].usersid)
         emitCards(index);
         io.emit('dispRooms', rooms);
     });
@@ -112,11 +116,6 @@ io.on('connection', socket => {
         var index = rooms.findIndex((e) => e.name === socket.room);
         if (index != -1) {
 
-            if (rooms[index].q == 0) {
-                rooms[index].gameStatus = 1;
-                rooms[index].status = 'waiting...';
-                rooms[index].game = { active: false };
-            }
             if (rooms[index].gameStatus == 2) {//se o jogo tiver ativo remove o id
                 for (var i = 0; i < 4; i++) {
                     if (rooms[index].game.players[i].id == socket.id) {
@@ -129,6 +128,11 @@ io.on('connection', socket => {
                 rooms[index].usersid.splice(indexUser, 1);
                 rooms[index].usersname.splice(indexUser, 1);
                 rooms[index].q--;
+            }
+            if (rooms[index].q == 0) {
+                rooms[index].gameStatus = 1;
+                rooms[index].status = 'waiting...';
+                rooms[index].game = { active: false };
             }
             socket.leave(socket.room);
             updateRoom();
