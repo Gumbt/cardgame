@@ -110,6 +110,7 @@ io.on('connection', socket => {
             }
             var removeCards = {
                 active: true,
+                myPos: rooms[index].game.players[j].idTurno,
                 myTeam: rooms[index].game.players[j].team,
                 ...rooms[index].game.table,
                 players: privatePlayers
@@ -161,7 +162,7 @@ io.on('connection', socket => {
     socket.on('sendCard', function (infos) {
         var index = rooms.findIndex((e) => e.name === socket.room);
         if (index != -1) {
-            if (rooms[index].game.table.turno.player == infos.player && rooms[index].game.table.requestTruco.requested == false) {
+            if (rooms[index].game.table.turno.player == infos.player && rooms[index].game.table.requestTruco.requested == false && rooms[index].game.table.centroMesa.length <= 4) {
                 var indexUser = rooms[index].game.players.findIndex((e) => e.id == socket.id);
                 var carta = rooms[index].game.players[indexUser].cartas[infos.carta];
                 rooms[index].game.players[indexUser].cartas.splice(infos.carta, 1);
@@ -285,9 +286,8 @@ io.on('connection', socket => {
     }
     function verificaFimGame(index) {
         if (rooms[index].game.table.teamsPoint.blue >= 12 || rooms[index].game.table.teamsPoint.red >= 12) {
-            emitCards(index);
+            rooms[index].game.table.endGame = true;
             setTimeout(function () {
-                rooms[index].game.table.endGame = true;
 
                 emitCards(index);
                 socket.leave(socket.room);
@@ -377,6 +377,7 @@ io.on('connection', socket => {
             var removeCards = {
                 active: true,
                 myTeam: rooms[index].game.players[j].team,
+                myPos: rooms[index].game.players[j].idTurno,
                 ...rooms[index].game.table,
                 players: privatePlayers
             }
