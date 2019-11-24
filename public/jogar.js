@@ -84,7 +84,7 @@ function gameS(game) {
     if (game.active == true) {
         if (game.endGame == true) {
             $('.trucoShowEndGame').show();
-            if (game.teamsPoint.redTeam >= 12) {
+            if (game.teamsPoint.red >= 12) {
                 $('.endGame .textStatus').html("<span class='redTT'>TIME VERMELHO VENCEU! " + game.teamsPoint.red + " - " + game.teamsPoint.blue + "</span> ");
             } else {
                 $('.endGame .textStatus').html("<span class='blueTT'>TIME AZUL VENCEU! " + game.teamsPoint.blue + " - " + game.teamsPoint.red + "</span> ");
